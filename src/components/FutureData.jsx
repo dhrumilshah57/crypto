@@ -33,7 +33,7 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
   coinData.forEach((coinDataPoint) => {
     coinPrice.push(coinDataPoint[4]);
   });
-  console.log(coinData)
+  // console.log(coinData)
   // const obj = { ...coinData }
   // //time,open,high,low,close avu order ave che 
   // //high,low,open,close,volume,marketcap evu joie che
@@ -51,7 +51,6 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
   // future.map((items) => {
   //   console.log(items)
   // })
-  console.log(cryptoDetails?.['24hVolume']);
   let obj1 = { new_input: [] }
   const val = coinData.map((d) => d.slice(1, 5))
   const proper_value = val.map((d) => [d[2], d[1], d[0], d[3]])
@@ -59,7 +58,23 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
     items.push(cryptoDetails?.['24hVolume'], cryptoDetails?.marketCap))
   // console.log(volume)
   obj1.new_input.push(proper_value)
-  console.log(obj1)
+  // console.log(obj1)
+  const jsonData= JSON.stringify(obj1)
+  console.log(jsonData);
+
+  
+  fetch('tari url aain mukje and inspect karine netwrok ma joje k console thai che k nai', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: jsonData
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error(error));
+
+
   let values = coinPrice.toString()
   let newValues = values.split(',')
   const data = {
