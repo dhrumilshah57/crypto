@@ -34,11 +34,11 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
     coinPrice.push(coinDataPoint[4]);
   });
   console.log(coinData)
-  const obj = { ...coinData }
-  //time,open,high,low,close avu order ave che 
-  //high,low,open,close,volume,marketcap evu joie che
-  // console.log(coinData[0]);
-  console.log(obj[0][0]); //this is how to access all data
+  // const obj = { ...coinData }
+  // //time,open,high,low,close avu order ave che 
+  // //high,low,open,close,volume,marketcap evu joie che
+  // // console.log(coinData[0]);
+  // console.log(obj[0][0]); //this is how to access all data
 
   // let future = [
   //   { key: 'high', value: obj[48][2] },
@@ -51,11 +51,15 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
   // future.map((items) => {
   //   console.log(items)
   // })
+  console.log(cryptoDetails?.['24hVolume']);
   let obj1 = { new_input: [] }
   const val = coinData.map((d) => d.slice(1, 5))
   const proper_value = val.map((d) => [d[2], d[1], d[0], d[3]])
-  console.log(proper_value);
+  proper_value.map((items) =>
+    items.push(cryptoDetails?.['24hVolume'], cryptoDetails?.marketCap))
+  // console.log(volume)
   obj1.new_input.push(proper_value)
+  console.log(obj1)
   let values = coinPrice.toString()
   let newValues = values.split(',')
   const data = {
