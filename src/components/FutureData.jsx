@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Col, Row, Typography } from 'antd';
@@ -7,76 +6,66 @@ import millify from 'millify';
 
 const { Title } = Typography;
 
-
-
 const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }) => {
-  const [coinData, setCoinData] = useState();
-  let coinPrice = [];
+  const [coinData, setCoinData] = useState([]);
+  const [futureData, setFutureData] = useState([]);
 
-  let coinTimestamp = [];
-  let coinLowercase = coinName.toLowerCase();
-  for (let i = 0; i < coinHistory?.data?.history?.length; i += 13) {
-    //this is how to convert timestamp to date
-    let date = new Date(coinHistory?.data?.history[i]?.timestamp * 1000).toLocaleString()
-    // console.log(date);
-    coinTimestamp.push(date)
-  }
+  const coinPrice = [];
+  const coinTimestamp = [];
+  const coinLowercase = coinName.toLowerCase();
+
   useEffect(() => {
-    axios
-      .get(`https://api.coingecko.com/api/v3/coins/${coinLowercase}/ohlc?vs_currency=usd&days=1`)
-      .then((res) => setCoinData(res.data))
-      .catch((error) => console.error(error));
-  }, []);
-
-  if (!coinData) return null;
-
-  coinData.forEach((coinDataPoint) => {
-    coinPrice.push(coinDataPoint[4]);
-  });
-  // console.log(coinData)
-  // const obj = { ...coinData }
-  // //time,open,high,low,close avu order ave che 
-  // //high,low,open,close,volume,marketcap evu joie che
-  // // console.log(coinData[0]);
-  // console.log(obj[0][0]); //this is how to access all data
-
-  // let future = [
-  //   { key: 'high', value: obj[48][2] },
-  //   { key: 'low', value: obj[48][3] },
-  //   { key: 'open', value: obj[48][1] },
-  //   { key: 'close', value: obj[48][4] },
-  //   { key: 'volume', value: millify(cryptoDetails?.['24hVolume']) },
-  //   { key: 'marketCap', value: millify(cryptoDetails?.marketCap) },
-  // ];
-  // future.map((items) => {
-  //   console.log(items)
-  // })
-  let obj1 = { new_input: [] }
-  const val = coinData.map((d) => d.slice(1, 5))
-  const proper_value = val.map((d) => [d[2], d[1], d[0], d[3]])
-  proper_value.map((items) =>
-    items.push(cryptoDetails?.['24hVolume'], cryptoDetails?.marketCap))
-  // console.log(volume)
-  obj1.new_input.push(proper_value)
-  // console.log(obj1)
-  const jsonData= JSON.stringify(obj1)
-  console.log(jsonData);
-
+    const fetchData = async () => {
+      const { data } = await axios.get(`https://api.coingecko.com/api/v3/coins/${coinLowercase}/ohlc?vs_currency=usd&days=1`);
+      setCoinData(data);
+    };
+    fetchData();
+  }, [coinLowercase]);
   
-  fetch('tari url aain mukje and inspect karine netwrok ma joje k console thai che k nai', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: jsonData
-  })
-  .then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.error(error));
+  console.log("GECKO COIN " + coinData)
+  if(coinData)
+  useEffect(() => {
+    const predictData = async () => {
+      try {
+        const data = { "0": (coinData.map((d) => [d[3], d[2], d[1], d[4], parseFloat(cryptoDetails['24hVolume']), parseFloat(cryptoDetails.marketCap)])) };
+        console.log("REQ DATA : " + JSON.stringify(data))
+        const res = await axios.post('http://127.0.0.1:8080/predict', data);
+        setFutureData(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    predictData();
+  }, [coinData, cryptoDetails]);
 
+  console.log("PREDICTED DATA : " + JSON.stringify(futureData));
 
+  if (!coinData.length) return null;
+
+  for (let i = 0; i < coinHistory?.data?.history?.length; i += 13) {
+    const date = new Date(coinHistory?.data?.history[i]?.timestamp * 1000).toLocaleString();
+    coinTimestamp.push(date);
+  }
+
+  const futurePrices = Object.values(futureData);
+
+  console.log(futurePrices[0]);
+
+  let prices = futurePrices[0];
+
+  prices?.forEach((coinDataPoint) => {
+    coinPrice.push(coinDataPoint);
+  });
+
+  let currentDate = new Date();
+  for (let i = 1; i <= 24; i++) {
+  let futureDate = new Date(currentDate.getTime());
+  futureDate.setHours(currentDate.getHours() + i);
+  coinTimestamp.push(futureDate.toLocaleString());}
   let values = coinPrice.toString()
   let newValues = values.split(',')
+
+  console.log(coinPrice);
   const data = {
     labels: coinTimestamp,
     datasets: [
@@ -92,7 +81,6 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
 
   const options = {
     scales: {
-
       yAxes: [
         {
           ticks: {
@@ -105,37 +93,21 @@ const FutureData = ({ coinHistory, currentPrice, coinName, time, cryptoDetails }
 
   return (
     <>
-      {/* <Row className="chart-header">
-        <Title level={2} className="chart-title">{coinName} Price Predictor </Title>
-        <Col className="price-container">
-          <Title level={5} className="price-change">Change: {coinHistory?.data?.change}%</Title>
-          <Title level={5} className="current-price">Current {coinName} Price: $ {currentPrice}</Title>
-          {coinPrice.length > 0 && (
-            <Title level={5} className="current-price">
-              {coinName} Price: $ {coinPrice[coinPrice.length - 1]}
-            </Title>)}
-        </Col>
-      </Row> */}
-      {/* <Line data={data} options={options} /> */}
       <Col className="coin-value-statistics">
         <Col className="coin-value-statistics-heading">
           <Title level={3} className="coin-details-heading">{coinName} Value Predictions</Title>
           <p>All values are in US dollars.</p>
           <p>This data will get updated every 5 to 10 minutes.</p>
-          <p>Press the button to get future predicted price of {coinName}.</p>
         </Col>
-        {/* {future.map((items) => (
-          <Col className="coin-stats">
-            <Col >
-              <h4>{items.key}</h4>
-            </Col>
-            <h4 >{items.value}</h4>
-          </Col>
-        ))} */}
-
+        <Line data={data} options={options} />
+        {futureData.length > 0 && (
+          <ul>
+            {futureData.map((item, index) => (
+              <li key={index}>{item.key}: {item.value}</li>
+            ))}
+          </ul>
+        )}
       </Col>
-      <button>Predict</button>
-
     </>
   );
 };
